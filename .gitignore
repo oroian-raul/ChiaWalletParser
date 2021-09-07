@@ -132,3 +132,4 @@ dmypy.json
 /.idea/modules.xml
 /.idea/ChiaWalletParser.iml
 /.idea/.gitignore
+/.idea/misc.xml
