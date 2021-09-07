@@ -15,5 +15,5 @@ class DataExporter:
     def export_farm_summary(self, data: FarmSummary):
         raise NotImplementedError('Not implemented')
 
-    def export_harvesters_summary(self, data: [HarversterSummary]):
+    def export_harvesters_summary(self, data: [HarvesterSummary]):
         raise NotImplementedError('Not implemented')

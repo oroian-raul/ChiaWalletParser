@@ -1,4 +1,5 @@
 from datetime import datetime
+import traceback
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import ASYNCHRONOUS
@@ -12,19 +13,13 @@ class InfluxExporter(DataExporter):
         self.bucket = bucket
         self.org = org
 
-    def write(self, point):
+    def write(self, data):
         try:
-            self.write_api.write(self.bucket, self.org, point)
-        except Exception as e:
-            print(str(e))
+            self.write_api.write(self.bucket, self.org, data)
+        except:
+            print(traceback.format_exc())
 
-    def write_points(self, points):
-        try:
-            self.write_api.write_points(self.bucket, self.org, points)
-        except Exception as e:
-            print(str(e))
-
-    def export_farm_summary(self, data: FarmSummary):
+    def export_farm_summary(self, data: DataExporter.FarmSummary):
         point = Point("farm_summary") \
             .tag("user_name", data.user_name) \
             .field("total_chia_farmed", data.total_chia_farmed) \
@@ -39,14 +34,14 @@ class InfluxExporter(DataExporter):
 
         self.write(point)
 
-    def export_harvesters_summary(self, data: [HarversterSummary]):
+    def export_harvesters_summary(self, data: [DataExporter.HarvesterSummary]):
         points = []
         for item in data:
-            points.append( Point("harvester") \
-                .tag("user_name", data.user_name) \
-                .field("ip", data.ip) \
-                .field("name", data.name) \
-                .field("plots_count", data.plots_count) \
-                .field("plots_size", data.plots_size))
+            points.append(Point("harvester_summary")
+                          .tag("user_name", item.user_name)
+                          .tag("ip", item.ip)
+                          .tag("name", item.name)
+                          .field("plots_count", item.plots_count)
+                          .field("plots_size", item.plots_size))
 
-        self.write_points(points)
+        self.write(points)
