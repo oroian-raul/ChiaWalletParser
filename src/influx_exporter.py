@@ -45,3 +45,19 @@ class InfluxExporter(DataExporter):
                           .field("plots_size", item.plots_size))
 
         self.write(points)
+
+    def export_wallet_summary(self, data: [DataExporter.WalletSummary]):
+        points = []
+        for item in data:
+            points.append(Point("wallet_summary")
+                .tag("user_name", item.user_name)
+                .tag("balances_fingerprint", item.balances_fingerprint)
+                .tag("wallet_id", item.wallet_id)
+                .tag("wallet_type", item.wallet_type)
+                .field("total_balance", item.total_balance)
+                .field("pending_total_balance", item.pending_total_balance)
+                .field("balances_fingerprint", item.balances_fingerprint)
+                .field("spendable", item.spendable)
+                .time(datetime.utcnow(), WritePrecision.NS))
+
+        self.write(points)
