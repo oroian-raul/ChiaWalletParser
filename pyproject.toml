@@ -7,3 +7,4 @@ authors = ["Raul Oroian"]
 [tool.poetry.dependencies]
 python = "^3.9"
 influxdb-client = "*"
+PyYAML = "5.4.1"
