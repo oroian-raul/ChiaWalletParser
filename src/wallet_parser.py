@@ -11,12 +11,14 @@ class WalletParser:
                  dry_run: bool,
                  sleep_interval: int,
                  harvesters_name_mapping: dict,
+                 path_to_chia,
                  data_exporter: DataExporter):
         self.data_exporter = data_exporter
         self.parser_user = parser_user
         self.harvesters_name_mapping = harvesters_name_mapping
         self.dry_run = dry_run
         self.sleep_interval = sleep_interval
+        self.path_to_chia = path_to_chia
 
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 1))  # connect() for UDP doesn't send packets
@@ -35,22 +37,23 @@ class WalletParser:
 
         return output.splitlines()
 
-    def export_wallet_info(self):
-        def get_info_value(info: str):
-            value_index_start = info.find(":")
-            if value_index_start == -1:
-                return None
+    @staticmethod
+    def get_info_value(info: str):
+        value_index_start = info.find(":")
+        if value_index_start == -1:
+            return None
 
-            value_index_start += 2
+        value_index_start += 2
 
-            value_index_end = info.find(" ", value_index_start)
-            if value_index_end == -1:
-                value_index_end = len(info)
-            return info[value_index_start: value_index_end]
+        value_index_end = info.find(" ", value_index_start)
+        if value_index_end == -1:
+            value_index_end = len(info)
+        return info[value_index_start: value_index_end]
 
+    def export_farm_info(self):
         def get_harvester_plots_info(info: str):
             plots_count = int(info[3:info[3:].find(" ")+3])
-            plots_size = float(get_info_value(info))
+            plots_size = float(self.get_info_value(info))
             return plots_count, plots_size
 
         def get_info_time_to_win(info: str):
@@ -59,30 +62,29 @@ class WalletParser:
         farm_summary = DataExporter.FarmSummary
         farm_summary.user_name = self.parser_user
         harvesters_summary = []
-        res = self.run_command("C:\\Users\Administrator\\AppData\\Local\\chia-blockchain\\app-1.2.5\\resources\\app.asar.unpacked\\daemon\\chia.exe farm summary")
+        res = self.run_command(f"{self.path_to_chia}\\chia.exe farm summary")
 
         index = 0
         while index < len(res):
             item = res[index]
             if "User transaction fees" in item:
-                farm_summary.user_transaction_fees = float(get_info_value(item))
+                farm_summary.user_transaction_fees = float(self.get_info_value(item))
             elif "Total chia farmed" in item:
-                farm_summary.total_chia_farmed = float(get_info_value(item))
+                farm_summary.total_chia_farmed = float(self.get_info_value(item))
             elif "Block rewards" in item:
-                farm_summary.block_rewords = float(get_info_value(item))
+                farm_summary.block_rewords = float(self.get_info_value(item))
             elif "Last height farmed" in item:
-                farm_summary.last_farmed_height = int(get_info_value(item))
+                farm_summary.last_farmed_height = int(self.get_info_value(item))
             elif "Plot count for all harvesters" in item:
-                farm_summary.plots_count = int(get_info_value(item))
+                farm_summary.plots_count = int(self.get_info_value(item))
             elif "Total size of plots" in item:
-                farm_summary.plots_size = float(get_info_value(item))
+                farm_summary.plots_size = float(self.get_info_value(item))
             elif "Estimated network space" in item:
-                farm_summary.estimated_network_space = float(get_info_value(item))
+                farm_summary.estimated_network_space = float(self.get_info_value(item))
             elif "Expected time to win" in item:
                 farm_summary.expected_time_to_win = get_info_time_to_win(item)
             elif "Local Harvester" in item or "Remote Harvester" in item:
-                user_name = self.parser_user
-                ip = get_info_value(item)
+                ip = self.get_info_value(item)
 
                 # Local Harvester
                 if ip is None:
@@ -92,7 +94,7 @@ class WalletParser:
                 index += 1
                 plot_info = get_harvester_plots_info(res[index])
                 harvesters_summary.append(DataExporter.HarvesterSummary(
-                    user_name=user_name,
+                    user_name=self.parser_user,
                     ip=ip,
                     name=name,
                     plots_count=plot_info[0],
@@ -106,7 +108,55 @@ class WalletParser:
         print(harvesters_summary)
         self.data_exporter.export_harvesters_summary(harvesters_summary)
 
+    def export_wallet_info(self):
+        def get_wallet_id_info(info):
+            wallet_id_index_start = info.find("ID") + 3
+            wallet_id = info[wallet_id_index_start: info.find(" ", wallet_id_index_start)]
+
+            wallet_type_index_start = info.find("type") + 5
+            wallet_type = info[wallet_type_index_start: info.find(" ", wallet_type_index_start)]
+
+            return wallet_id, wallet_type
+
+        res = self.run_command(f"{self.path_to_chia}\\chia.exe wallet show")
+
+        balances_fingerprint = None
+        wallets_info = []
+        index = 0
+        while index < len(res):
+            item = res[index]
+            if "Balances, fingerprint" in item:
+                balances_fingerprint = self.get_info_value(item)
+            elif "Wallet ID" in item:
+                wallet_id, wallet_type = get_wallet_id_info(item)
+                index += 1
+                item = res[index]
+                total_balance = float(self.get_info_value(item))
+
+                index += 1
+                item = res[index]
+                pending_total_balance = float(self.get_info_value(item))
+
+                index += 1
+                item = res[index]
+                spendable = float(self.get_info_value(item))
+
+                wallets_info.append(DataExporter.WalletSummary(
+                    user_name=self.parser_user,
+                    balances_fingerprint=balances_fingerprint,
+                    wallet_id=wallet_id,
+                    wallet_type=wallet_type,
+                    total_balance=total_balance,
+                    pending_total_balance=pending_total_balance,
+                    spendable=spendable
+                ))
+            index += 1
+
+        print(wallets_info)
+        self.data_exporter.export_wallet_summary(wallets_info)
+
     def start(self):
         while True:
+            self.export_farm_info()
             self.export_wallet_info()
             sleep(self.sleep_interval)
