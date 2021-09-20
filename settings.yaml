@@ -1,4 +1,4 @@
 harvesters:
-  "ip_1": "harvester_1"
-  "ip_2": "harvester_2"
-  "ip_3": "harvester_3"
+  "192.168.50.28": "harvester_1"
+  "192.168.50.92": "harvester_2"
+  "192.168.50.129": "full_noe"

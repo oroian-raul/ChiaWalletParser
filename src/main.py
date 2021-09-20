@@ -22,6 +22,7 @@ parser.add_argument('--parser_user', type=str, required=False, default="default_
                     help='Who is using this parser. Might be handy when more people save in the same database')
 parser.add_argument('--sleep_interval', type=int, default=600, required=False, help='sleep interval in seconds between commands')
 parser.add_argument('--path_to_chia', type=str, required=True, help='path to chia executable (C:\\Users\<USER>\\AppData\\Local\\chia-blockchain\\<app-1.2.5>\\resources\\app.asar.unpacked\\daemon)')
+parser.add_argument('--settings_file', type=str, required=False, default=None, help='path to chia yaml settings file')
 parser.add_argument('--dry_run', type=str, default=False, required=False,
                     help='If set to True data will not be saved to Database. Used for debugging.')
 
@@ -29,8 +30,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     signal(SIGINT, handler)
 
-    with open('..//settings.yaml') as file:
-        settings_dict = yaml.safe_load(file)
+    settings_dict = {}
+    if args.settings_file:
+        with open(args.settings_file) as file:
+            settings_dict = yaml.safe_load(file)
 
     harvesters_name_mapping = {}
     parser = WalletParser(parser_user=args.parser_user,

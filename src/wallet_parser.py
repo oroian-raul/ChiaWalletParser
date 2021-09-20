@@ -52,15 +52,33 @@ class WalletParser:
 
     def export_farm_info(self):
         def get_harvester_plots_info(info: str):
-            plots_count = int(info[3:info[3:].find(" ")+3])
+            plots_count = int(info[3:info[3:].find(" ") + 3])
             plots_size = float(self.get_info_value(info))
             return plots_count, plots_size
 
         def get_info_time_to_win(info: str):
-            return None
+            multiplier_type_values = {"day": 1,
+                                      "days": 1,
+                                      "week": 7,
+                                      "weeks": 7,
+                                      "month": 31,
+                                      "months": 31,
+                                      "year": 365,
+                                      "years": 365,
+                                      }
+            value_str = info[info.find(":") + 2:]
+            value_items = [item for item in value_str.split() if item != "and"]
+            index = 0
+            value = 0
+            while index < len(value_items):
+                multiplier = int(value_items[index])
+                index += 1
+                multiplier_type = value_items[index]
+                value += multiplier * multiplier_type_values[multiplier_type]
+                index += 1
 
-        farm_summary = DataExporter.FarmSummary
-        farm_summary.user_name = self.parser_user
+            return value
+
         harvesters_summary = []
         res = self.run_command(f"{self.path_to_chia}\\chia.exe farm summary")
 
@@ -68,21 +86,21 @@ class WalletParser:
         while index < len(res):
             item = res[index]
             if "User transaction fees" in item:
-                farm_summary.user_transaction_fees = float(self.get_info_value(item))
+                user_transaction_fees = float(self.get_info_value(item))
             elif "Total chia farmed" in item:
-                farm_summary.total_chia_farmed = float(self.get_info_value(item))
+                total_chia_farmed = float(self.get_info_value(item))
             elif "Block rewards" in item:
-                farm_summary.block_rewords = float(self.get_info_value(item))
+                block_rewords = float(self.get_info_value(item))
             elif "Last height farmed" in item:
-                farm_summary.last_farmed_height = int(self.get_info_value(item))
+                last_farmed_height = int(self.get_info_value(item))
             elif "Plot count for all harvesters" in item:
-                farm_summary.plots_count = int(self.get_info_value(item))
+                plots_count = int(self.get_info_value(item))
             elif "Total size of plots" in item:
-                farm_summary.plots_size = float(self.get_info_value(item))
+                plots_size = float(self.get_info_value(item))
             elif "Estimated network space" in item:
-                farm_summary.estimated_network_space = float(self.get_info_value(item))
+                estimated_network_space = float(self.get_info_value(item))
             elif "Expected time to win" in item:
-                farm_summary.expected_time_to_win = get_info_time_to_win(item)
+                expected_time_to_win = get_info_time_to_win(item)
             elif "Local Harvester" in item or "Remote Harvester" in item:
                 ip = self.get_info_value(item)
 
@@ -101,6 +119,18 @@ class WalletParser:
                     plots_size=plot_info[1]
                 ))
             index += 1
+
+        farm_summary = DataExporter.FarmSummary(
+            user_name=self.parser_user,
+            user_transaction_fees=user_transaction_fees,
+            expected_time_to_win=expected_time_to_win,
+            estimated_network_space=estimated_network_space,
+            plots_size=plots_size,
+            plots_count=plots_count,
+            last_farmed_height=last_farmed_height,
+            total_chia_farmed=total_chia_farmed,
+            block_rewords=block_rewords
+        )
 
         print(farm_summary)
         self.data_exporter.export_farm_summary(farm_summary)
