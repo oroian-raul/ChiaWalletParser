@@ -187,6 +187,10 @@ class WalletParser:
 
     def start(self):
         while True:
-            self.export_farm_info()
-            self.export_wallet_info()
+            try:
+                self.export_farm_info()
+                self.export_wallet_info()
+            except Exception as e:
+                print(e)
+
             sleep(self.sleep_interval)
