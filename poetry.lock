@@ -8,7 +8,7 @@ python-versions = "*"
 
 [[package]]
 name = "influxdb-client"
-version = "1.20.0"
+version = "1.21.0"
 description = "InfluxDB 2.0 Python client library"
 category = "main"
 optional = false
@@ -72,7 +72,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "urllib3"
-version = "1.26.6"
+version = "1.26.7"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
@@ -94,8 +94,8 @@ certifi = [
     {file = "certifi-2021.5.30.tar.gz", hash = "sha256:2bbf76fd432960138b3ef6dda3dde0544f27cbf8546c458e60baf371917ba9ee"},
 ]
 influxdb-client = [
-    {file = "influxdb_client-1.20.0-py3-none-any.whl", hash = "sha256:8bf09f18c66f0554d4c003f4c9ef5e82e461f38f930cc53fed2abc1193130d30"},
-    {file = "influxdb_client-1.20.0.tar.gz", hash = "sha256:da734bb25e7064e03bf9699de502b4e02ef0304cddac7cb56cbd9d5d0c3a3bcd"},
+    {file = "influxdb_client-1.21.0-py3-none-any.whl", hash = "sha256:c708424a94f126cad195e1074002bc8c6781dbe2210ff3d6c8dcf64e6d7fb5c6"},
+    {file = "influxdb_client-1.21.0.tar.gz", hash = "sha256:f3c9b51858ee3f5d219f145b4f71518ae5a0284c85d03f88940c143a63e6b8ce"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
@@ -145,6 +145,6 @@ six = [
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 urllib3 = [
-    {file = "urllib3-1.26.6-py2.py3-none-any.whl", hash = "sha256:39fb8672126159acb139a7718dd10806104dec1e2f0f6c88aab05d17df10c8d4"},
-    {file = "urllib3-1.26.6.tar.gz", hash = "sha256:f57b4c16c62fa2760b7e3d97c35b255512fb6b59a259730f36ba32ce9f8e342f"},
+    {file = "urllib3-1.26.7-py2.py3-none-any.whl", hash = "sha256:c4fdf4019605b6e5423637e01bc9fe4daef873709a7973e195ceba0a62bbc844"},
+    {file = "urllib3-1.26.7.tar.gz", hash = "sha256:4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece"},
 ]
